@@ -85,11 +85,11 @@ export class SmartInput extends LitElement {
     return html`
       <input
         id="smart-input"
-        maxlength=${ifDefined(this.maxlength)}
         type="text"
-        value=${this.value}
+        .value=${this.value}
+        placeholder=${ifDefined(this.placeholder)}
+        maxlength=${ifDefined(this.maxlength)}
         ?disabled=${this.disabled}
-        placeholder=${this.placeholder}
         @input=${this._handleInput}
         @beforeinput=${this._handleBeforeInput}
         @focus=${this._handleFocusIn}

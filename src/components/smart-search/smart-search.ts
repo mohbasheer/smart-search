@@ -6,6 +6,7 @@ import { styles } from "./smart-search.styles.js";
 import "../smart-dropdown/smart-dropdown.js";
 import "../smart-input/smart-input.js";
 import "../smart-spinner/smart-spinner.js";
+import "../smart-clear-button/smart-clear-button.js";
 import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
 
 type SearchProvider = (query: string) => Promise<any[]>;
@@ -32,6 +33,16 @@ export class SmartSearch extends LitElement {
   @state()
   private _showNoResults = false;
 
+  private _noResultElement = html`<div class="no-results">
+    No results found
+  </div>`;
+
+  private _spinnerElement = html`<smart-spinner></smart-spinner>`;
+
+  private _clearButtonElement = html`<smart-clear-button
+    @clear=${this._handleClear}
+  ></smart-clear-button>`;
+
   private _debouncedSearch = debounce(async (query: string) => {
     if (query.length < 2) {
       this._items = [];
@@ -51,6 +62,12 @@ export class SmartSearch extends LitElement {
     this._debouncedSearch(this._query);
   }
 
+  private _handleClear() {
+    this._query = "";
+    this._items = [];
+    this._showNoResults = false;
+  }
+
   private _handleFocusIn() {
     this._debouncedSearch(this._query);
   }
@@ -65,18 +82,21 @@ export class SmartSearch extends LitElement {
       <div>
         <div class="search-container">
           <smart-input
+            .value=${this._query}
             @input-changed=${this._handleInputChange}
             @focus-out=${this._handleFocusOut}
             @focus-in=${this._handleFocusIn}
             placeholder="Search..."
           >
           </smart-input>
-          ${this._isLoading ? html`<smart-spinner></smart-spinner>` : ""}
+          ${this._isLoading
+            ? this._spinnerElement
+            : this._query.length > 0
+              ? this._clearButtonElement
+              : ""}
         </div>
         <smart-dropdown .items=${this._items}></smart-dropdown>
-        ${this._showNoResults
-          ? html`<div class="no-results">No results found</div>`
-          : ""}
+        ${this._showNoResults ? this._noResultElement : ""}
       </div>
     `;
   }

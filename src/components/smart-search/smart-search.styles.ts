@@ -10,7 +10,8 @@ export const styles = css`
     width: 100%;
   }
 
-  smart-spinner {
+  smart-spinner,
+  smart-clear-button {
     position: absolute;
     right: 12px;
     top: 50%;
