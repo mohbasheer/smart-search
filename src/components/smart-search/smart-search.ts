@@ -1,28 +1,36 @@
 import { html, LitElement } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
+import { debounce } from "../../utils/debounce.js";
 
-import "../smart-input/smart-input.js";
 import "../smart-dropdown/smart-dropdown.js";
-import { DropdownItem } from "../smart-dropdown/smart-dropdown.js";
+import "../smart-input/smart-input.js";
+import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
+
+type SearchProvider = (query: string) => Promise<any[]>;
 
 @customElement("smart-search")
 export class SmartSearch extends LitElement {
-  private initialValue = [
-    { id: "1", text: "mohammed" },
-    { id: "2", text: "basheer" },
-    { id: "3", text: "basha" },
-    { id: "4", text: "ravi" },
-    { id: "5", text: "john" },
-  ];
+  @property({ attribute: false })
+  searchProvider: SearchProvider = async () => [];
+
+  @property({ attribute: false })
+  resultMapper: (item: any) => SearchResultItem = (item: any) => item;
 
   @state()
-  private items: DropdownItem[] = [];
+  private _items: SearchResultItem[] = [];
+
+  private _debouncedSearch = debounce(async (query: string) => {
+    if (query.length < 2) {
+      this._items = [];
+      return;
+    }
+    //TODO: We will add a loading state here later
+    const results = await this.searchProvider(query);
+    this._items = results.map(this.resultMapper);
+  }, 300);
 
   private _handleInputChange(event: CustomEvent) {
-    if (event.detail.value === "") return;
-    this.items = this.initialValue.filter(({ text }) =>
-      text.includes(event.detail.value)
-    );
+    this._debouncedSearch(event.detail.value);
   }
 
   protected render() {
@@ -30,12 +38,10 @@ export class SmartSearch extends LitElement {
       <div>
         <smart-input
           @input-changed=${this._handleInputChange}
-          exclude="@!$%"
-          value="checking 123"
-          id="basic-search"
+          placeholder="Search..."
         >
         </smart-input>
-        <smart-dropdown .items=${this.items}></smart-dropdown>
+        <smart-dropdown .items=${this._items}></smart-dropdown>
       </div>
     `;
   }

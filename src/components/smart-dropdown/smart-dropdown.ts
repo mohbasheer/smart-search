@@ -2,9 +2,14 @@ import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { dropdownStyles } from "./smart-dropdown.style.js";
 
-export interface DropdownItem {
+export interface SearchResultItem<T = any> {
   id: string;
-  text: string;
+  primaryText: string;
+  secondaryText?: string;
+  icon?: string;
+  value?: string;
+  isDisabled?: boolean;
+  original: T;
 }
 
 @customElement("smart-dropdown")
@@ -12,12 +17,12 @@ export class SmartDropdown extends LitElement {
   static styles = [dropdownStyles];
 
   @property({ type: Array })
-  items: DropdownItem[] = [];
+  items: SearchResultItem[] = [];
 
   @property({ type: String })
   activeItemId?: string;
 
-  private _handleItemClick(item: DropdownItem) {
+  private _handleItemClick(item: SearchResultItem) {
     this.dispatchEvent(
       new CustomEvent("item-selected", {
         detail: { item },
@@ -38,7 +43,7 @@ export class SmartDropdown extends LitElement {
               class=${this.activeItemId === item.id ? "active" : ""}
               @click=${() => this._handleItemClick(item)}
             >
-              ${item.text}
+              ${item.primaryText}
             </li>
           `
         )}
