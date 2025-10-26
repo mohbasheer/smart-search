@@ -28,10 +28,13 @@ export class SmartSearch extends LitElement {
   private _isLoading = false;
 
   @state()
-  private _query = "";
+  private _inputValue = "";
 
   @state()
   private _showNoResults = false;
+
+  @state()
+  private _selectedItem: SearchResultItem | null = null;
 
   private _noResultElement = html`<div class="no-results">
     No results found
@@ -53,23 +56,24 @@ export class SmartSearch extends LitElement {
     this._showNoResults = false;
     const results = await this.searchProvider(query);
     this._items = results.map(this.resultMapper);
-    this._showNoResults = results.length === 0 && query.length >= 2;
+    this._showNoResults = results.length === 0;
     this._isLoading = false;
   }, 300);
 
   private _handleInputChange(event: CustomEvent) {
-    this._query = event.detail.value;
-    this._debouncedSearch(this._query);
+    this._inputValue = event.detail.value;
+    this._selectedItem = null;
+    this._debouncedSearch(this._inputValue);
   }
 
   private _handleClear() {
-    this._query = "";
+    this._inputValue = "";
     this._items = [];
     this._showNoResults = false;
   }
 
   private _handleFocusIn() {
-    this._debouncedSearch(this._query);
+    this._debouncedSearch(this._inputValue);
   }
 
   private _handleFocusOut() {
@@ -77,12 +81,26 @@ export class SmartSearch extends LitElement {
     this._showNoResults = false;
   }
 
+  private _handleItemSelected(event: CustomEvent) {
+    this._selectedItem = event.detail.item;
+    this._inputValue = this._selectedItem?.primaryText || "";
+    this._items = [];
+    this._showNoResults = false;
+    this.dispatchEvent(
+      new CustomEvent("search-item-selected", {
+        detail: { item: this._selectedItem },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   protected render() {
     return html`
       <div>
         <div class="search-container">
           <smart-input
-            .value=${this._query}
+            .value=${this._inputValue}
             @input-changed=${this._handleInputChange}
             @focus-out=${this._handleFocusOut}
             @focus-in=${this._handleFocusIn}
@@ -91,11 +109,15 @@ export class SmartSearch extends LitElement {
           </smart-input>
           ${this._isLoading
             ? this._spinnerElement
-            : this._query.length > 0
+            : this._inputValue.length > 0
               ? this._clearButtonElement
               : ""}
         </div>
-        <smart-dropdown .items=${this._items}></smart-dropdown>
+        <smart-dropdown
+          .activeItemId=${this._selectedItem?.id}
+          @item-selected=${this._handleItemSelected}
+          .items=${this._items}
+        ></smart-dropdown>
         ${this._showNoResults ? this._noResultElement : ""}
       </div>
     `;

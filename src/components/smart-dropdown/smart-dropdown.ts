@@ -41,7 +41,7 @@ export class SmartDropdown extends LitElement {
               role="option"
               id=${item.id}
               class=${this.activeItemId === item.id ? "active" : ""}
-              @click=${() => this._handleItemClick(item)}
+              @mousedown=${() => this._handleItemClick(item)}
             >
               ${item.primaryText}
             </li>
