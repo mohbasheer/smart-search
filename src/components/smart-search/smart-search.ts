@@ -37,7 +37,7 @@ export class SmartSearch extends LitElement {
   private _selectedItem: SearchResultItem | null = null;
 
   @state()
-  private _targetItem: SearchResultItem | null = null;
+  private _focusedItem: SearchResultItem | null = null;
 
   private _noResultElement = html`<div class="no-results">
     No results found
@@ -66,6 +66,7 @@ export class SmartSearch extends LitElement {
   private _handleInputChange(event: CustomEvent) {
     this._inputValue = event.detail.value;
     this._selectedItem = null;
+    this._focusedItem = null;
     this._debouncedSearch(this._inputValue);
   }
 
@@ -84,11 +85,12 @@ export class SmartSearch extends LitElement {
     this._showNoResults = false;
   }
 
-  private _handleItemSelected(event: CustomEvent) {
-    this._selectedItem = event.detail.item;
+  private _handleItemSelected(selectedItem: SearchResultItem) {
+    this._selectedItem = selectedItem;
     this._inputValue = this._selectedItem?.primaryText || "";
     this._items = [];
     this._showNoResults = false;
+    this._focusedItem = null;
     this.dispatchEvent(
       new CustomEvent("search-item-selected", {
         detail: { item: this._selectedItem },
@@ -100,32 +102,43 @@ export class SmartSearch extends LitElement {
 
   private _handleKeyDown = (event: KeyboardEvent) => {
     let currentIndex;
+    console.log("Key down event:", event.key);
     switch (event.key) {
       case "ArrowDown":
         currentIndex = -1;
-        if (this._targetItem) {
+        if (this._focusedItem) {
           currentIndex = this._items.findIndex(
-            (item) => item.id === this._targetItem?.id
+            (item) => item.id === this._focusedItem?.id
           );
         }
         if (currentIndex >= this._items.length - 1) {
-          this._targetItem = this._items[0];
+          this._focusedItem = this._items[0];
         } else {
-          this._targetItem = this._items[currentIndex + 1];
+          this._focusedItem = this._items[currentIndex + 1];
         }
         break;
       case "ArrowUp":
         currentIndex = this._items.length;
-        if (this._targetItem) {
+        if (this._focusedItem) {
           currentIndex = this._items.findIndex(
-            (item) => item.id === this._targetItem?.id
+            (item) => item.id === this._focusedItem?.id
           );
         }
         if (currentIndex === 0) {
-          this._targetItem = this._items[this._items.length - 1];
+          this._focusedItem = this._items[this._items.length - 1];
         } else {
-          this._targetItem = this._items[currentIndex - 1];
+          this._focusedItem = this._items[currentIndex - 1];
         }
+        break;
+      case "Enter":
+        if (this._focusedItem) {
+          this._handleItemSelected(this._focusedItem);
+        }
+        break;
+      case "Escape":
+        this._items = [];
+        this._showNoResults = false;
+        this._focusedItem = null;
         break;
       default:
         break;
@@ -136,7 +149,7 @@ export class SmartSearch extends LitElement {
     const targetItem = this._items.find(
       (item) => item.id === event.detail.itemId
     );
-    if (targetItem) this._targetItem = targetItem;
+    if (targetItem) this._focusedItem = targetItem;
   };
 
   protected render() {
@@ -149,8 +162,7 @@ export class SmartSearch extends LitElement {
             @focus-out=${this._handleFocusOut}
             @focus-in=${this._handleFocusIn}
             placeholder="Search..."
-          >
-          </smart-input>
+          ></smart-input>
           ${this._isLoading
             ? this._spinnerElement
             : this._inputValue.length > 0
@@ -158,9 +170,9 @@ export class SmartSearch extends LitElement {
               : ""}
         </div>
         <smart-dropdown
-          .targetItemId=${this._targetItem?.id}
-          .activeItemId=${this._selectedItem?.id}
-          @item-selected=${this._handleItemSelected}
+          .focusedItemId=${this._focusedItem?.id}
+          @item-selected=${(event: CustomEvent) =>
+            this._handleItemSelected(event.detail.item)}
           @item-hovered=${this._handleItemHovered}
           .items=${this._items}
         ></smart-dropdown>

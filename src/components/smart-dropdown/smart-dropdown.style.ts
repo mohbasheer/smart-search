@@ -28,11 +28,7 @@ export const dropdownStyles = css`
     border-bottom: none;
   }
 
-  li.target {
-    background-color: #f5f5f5;
-  }
-
-  li.active {
+  li.selected {
     background-color: #e0e0e0;
     font-weight: bold;
   }

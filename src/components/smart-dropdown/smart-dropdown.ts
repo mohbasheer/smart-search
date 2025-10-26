@@ -20,10 +20,7 @@ export class SmartDropdown extends LitElement {
   items: SearchResultItem[] = [];
 
   @property({ type: String })
-  activeItemId?: string;
-
-  @property({ type: String })
-  targetItemId?: string;
+  focusedItemId?: string;
 
   private _handleItemClick(item: SearchResultItem) {
     this.dispatchEvent(
@@ -34,16 +31,6 @@ export class SmartDropdown extends LitElement {
       })
     );
   }
-
-  private _getCSSClass = (item: SearchResultItem) => {
-    let cssClass = "";
-    if (this.activeItemId === item.id) {
-      cssClass = "active";
-    } else if (this.targetItemId === item.id) {
-      cssClass = "target";
-    }
-    return cssClass;
-  };
 
   private _handleMouseOver = (event: MouseEvent) => {
     if (event.target) {
@@ -59,6 +46,19 @@ export class SmartDropdown extends LitElement {
     }
   };
 
+  updated(changedProperties: Map<string, any>) {
+    if (changedProperties.has("focusedItemId") && this.focusedItemId) {
+      const focusedElement = this.shadowRoot?.querySelector(
+        `#${this.focusedItemId}`
+      );
+      if (focusedElement) {
+        focusedElement.scrollIntoView({
+          block: "nearest",
+        });
+      }
+    }
+  }
+
   render() {
     return html`
       <ul role="listbox" @mouseover=${this._handleMouseOver}>
@@ -67,7 +67,7 @@ export class SmartDropdown extends LitElement {
             <li
               role="option"
               id=${item.id}
-              class=${this._getCSSClass(item)}
+              class=${this.focusedItemId === item.id ? "selected" : ""}
               @mousedown=${() => this._handleItemClick(item)}
             >
               ${item.primaryText}
