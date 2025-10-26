@@ -32,7 +32,7 @@ export class SmartDropdown extends LitElement {
     );
   }
 
-  private _handleMouseOver = (event: MouseEvent) => {
+  private _handlePointerOver = (event: PointerEvent) => {
     if (event.target) {
       const element = event.target as HTMLElement;
       const itemId = element.id;
@@ -61,14 +61,14 @@ export class SmartDropdown extends LitElement {
 
   render() {
     return html`
-      <ul role="listbox" @mouseover=${this._handleMouseOver}>
+      <ul role="listbox" @pointerover=${this._handlePointerOver}>
         ${this.items.map(
           (item) => html`
             <li
               role="option"
               id=${item.id}
               class=${this.focusedItemId === item.id ? "selected" : ""}
-              @mousedown=${() => this._handleItemClick(item)}
+              @click=${() => this._handleItemClick(item)}
             >
               ${item.primaryText}
             </li>

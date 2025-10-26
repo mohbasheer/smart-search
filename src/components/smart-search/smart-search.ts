@@ -80,11 +80,6 @@ export class SmartSearch extends LitElement {
     this._debouncedSearch(this._inputValue);
   }
 
-  private _handleFocusOut() {
-    this._items = [];
-    this._showNoResults = false;
-  }
-
   private _handleItemSelected(selectedItem: SearchResultItem) {
     this._selectedItem = selectedItem;
     this._inputValue = this._selectedItem?.primaryText || "";
@@ -99,6 +94,13 @@ export class SmartSearch extends LitElement {
       })
     );
   }
+
+  private _handleSubmit = (event: Event) => {
+    event.preventDefault();
+    if (this._focusedItem) {
+      this._handleItemSelected(this._focusedItem);
+    }
+  };
 
   private _handleKeyDown = (event: KeyboardEvent) => {
     let currentIndex;
@@ -152,14 +154,35 @@ export class SmartSearch extends LitElement {
     if (targetItem) this._focusedItem = targetItem;
   };
 
+  private _handleGlobalPointerDown = (event: PointerEvent) => {
+    const path = event.composedPath();
+    if (!path.includes(this)) {
+      this._items = [];
+      this._showNoResults = false;
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("pointerdown", this._handleGlobalPointerDown);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("pointerdown", this._handleGlobalPointerDown);
+  }
+
   protected render() {
     return html`
       <div>
-        <div class="search-container" @keydown=${this._handleKeyDown}>
+        <form
+          class="search-container"
+          @keydown=${this._handleKeyDown}
+          @submit=${this._handleSubmit}
+        >
           <smart-input
             .value=${this._inputValue}
             @input-changed=${this._handleInputChange}
-            @focus-out=${this._handleFocusOut}
             @focus-in=${this._handleFocusIn}
             placeholder="Search..."
           ></smart-input>
@@ -168,7 +191,7 @@ export class SmartSearch extends LitElement {
             : this._inputValue.length > 0
               ? this._clearButtonElement
               : ""}
-        </div>
+        </form>
         <smart-dropdown
           .focusedItemId=${this._focusedItem?.id}
           @item-selected=${(event: CustomEvent) =>
