@@ -36,6 +36,9 @@ export class SmartSearch extends LitElement {
   @state()
   private _selectedItem: SearchResultItem | null = null;
 
+  @state()
+  private _targetItem: SearchResultItem | null = null;
+
   private _noResultElement = html`<div class="no-results">
     No results found
   </div>`;
@@ -95,10 +98,51 @@ export class SmartSearch extends LitElement {
     );
   }
 
+  private _handleKeyDown = (event: KeyboardEvent) => {
+    let currentIndex;
+    switch (event.key) {
+      case "ArrowDown":
+        currentIndex = -1;
+        if (this._targetItem) {
+          currentIndex = this._items.findIndex(
+            (item) => item.id === this._targetItem?.id
+          );
+        }
+        if (currentIndex >= this._items.length - 1) {
+          this._targetItem = this._items[0];
+        } else {
+          this._targetItem = this._items[currentIndex + 1];
+        }
+        break;
+      case "ArrowUp":
+        currentIndex = this._items.length;
+        if (this._targetItem) {
+          currentIndex = this._items.findIndex(
+            (item) => item.id === this._targetItem?.id
+          );
+        }
+        if (currentIndex === 0) {
+          this._targetItem = this._items[this._items.length - 1];
+        } else {
+          this._targetItem = this._items[currentIndex - 1];
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  private _handleItemHovered = (event: CustomEvent) => {
+    const targetItem = this._items.find(
+      (item) => item.id === event.detail.itemId
+    );
+    if (targetItem) this._targetItem = targetItem;
+  };
+
   protected render() {
     return html`
       <div>
-        <div class="search-container">
+        <div class="search-container" @keydown=${this._handleKeyDown}>
           <smart-input
             .value=${this._inputValue}
             @input-changed=${this._handleInputChange}
@@ -114,8 +158,10 @@ export class SmartSearch extends LitElement {
               : ""}
         </div>
         <smart-dropdown
+          .targetItemId=${this._targetItem?.id}
           .activeItemId=${this._selectedItem?.id}
           @item-selected=${this._handleItemSelected}
+          @item-hovered=${this._handleItemHovered}
           .items=${this._items}
         ></smart-dropdown>
         ${this._showNoResults ? this._noResultElement : ""}

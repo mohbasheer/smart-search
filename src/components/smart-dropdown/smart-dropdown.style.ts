@@ -28,7 +28,7 @@ export const dropdownStyles = css`
     border-bottom: none;
   }
 
-  li:hover {
+  li.target {
     background-color: #f5f5f5;
   }
 
