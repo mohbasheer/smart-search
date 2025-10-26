@@ -8,7 +8,7 @@ export const dropdownStyles = css`
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     background-color: #fff;
     overflow: hidden;
-    max-height: 300px;
+    max-height: 50vh;
     overflow-y: auto;
   }
 
@@ -35,5 +35,12 @@ export const dropdownStyles = css`
   li.active {
     background-color: #e0e0e0;
     font-weight: bold;
+  }
+
+  @media (max-width: 600px) {
+    li {
+      padding: 14px 12px;
+      font-size: 16px;
+    }
   }
 `;
