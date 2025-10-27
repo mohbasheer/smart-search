@@ -61,13 +61,18 @@ export class SmartDropdown extends LitElement {
 
   render() {
     return html`
-      <ul role="listbox" @pointerover=${this._handlePointerOver}>
+      <ul
+        role="listbox"
+        id=${this.id || "smart-dropdown-listbox"}
+        @pointerover=${this._handlePointerOver}
+      >
         ${this.items.map(
           (item) => html`
             <li
               role="option"
               id=${item.id}
               class=${this.focusedItemId === item.id ? "selected" : ""}
+              aria-selected=${this.focusedItemId === item.id ? "true" : "false"}
               @click=${() => this._handleItemClick(item)}
             >
               ${item.primaryText}

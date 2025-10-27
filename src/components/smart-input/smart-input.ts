@@ -35,6 +35,30 @@ export class SmartInput extends LitElement {
   @property({ type: Boolean })
   disabled: boolean = false;
 
+  /**
+   * ARIA role for the input.
+   */
+  @property({ type: String })
+  role: "combobox" | "textbox" | "searchbox" = "searchbox";
+
+  /**
+   * ID of the element this input controls.
+   */
+  @property({ type: String, attribute: "aria-controls" })
+  ariaControls: string | null = null;
+
+  /**
+   * Whether the controlled element is expanded.
+   */
+  @property({ type: String, attribute: "aria-expanded" })
+  ariaExpanded: "true" | "false" | null = null;
+
+  /**
+   * ID of the currently active descendant.
+   */
+  @property({ type: String, attribute: "aria-activedescendant" })
+  ariaActiveDescendant: string | null = null;
+
   static styles = [baseInputStyles];
 
   private _handleInput(event: Event) {
@@ -90,6 +114,12 @@ export class SmartInput extends LitElement {
         placeholder=${ifDefined(this.placeholder)}
         maxlength=${ifDefined(this.maxlength)}
         ?disabled=${this.disabled}
+        role=${this.role}
+        aria-controls=${ifDefined(this.ariaControls ?? undefined)}
+        aria-expanded=${ifDefined(this.ariaExpanded ?? undefined)}
+        aria-activedescendant=${ifDefined(
+          this.ariaActiveDescendant ?? undefined
+        )}
         @input=${this._handleInput}
         @beforeinput=${this._handleBeforeInput}
         @focus=${this._handleFocusIn}

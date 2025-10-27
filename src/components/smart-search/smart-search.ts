@@ -3,6 +3,7 @@ import { customElement, property, state, query } from "lit/decorators.js";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
 import { computePosition, flip, size, autoUpdate } from "@floating-ui/dom";
+import { nanoid } from "nanoid";
 
 import "../smart-dropdown/smart-dropdown.js";
 import "../smart-input/smart-input.js";
@@ -23,6 +24,7 @@ export class SmartSearch extends LitElement {
   private _dropdownElement!: HTMLElement;
 
   private _cleanupFloatingUI: (() => void) | null = null;
+  private _listboxId: string;
 
   @property({ attribute: false })
   searchProvider: SearchProvider = async () => [];
@@ -57,6 +59,11 @@ export class SmartSearch extends LitElement {
   private _clearButtonElement = html`<smart-clear-button
     @clear=${this._handleClear}
   ></smart-clear-button>`;
+
+  constructor() {
+    super();
+    this._listboxId = `smart-dropdown-listbox-${nanoid(6)}`;
+  }
 
   private _debouncedSearch = debounce(async (query: string) => {
     if (query.length < 2) {
@@ -235,6 +242,7 @@ export class SmartSearch extends LitElement {
   }
 
   protected render() {
+    const isExpanded = this._items.length > 0;
     return html`
       <div style="position: relative;">
         <form
@@ -247,6 +255,10 @@ export class SmartSearch extends LitElement {
             @input-changed=${this._handleInputChange}
             @focus-in=${this._handleFocusIn}
             placeholder="Search..."
+            role="combobox"
+            .ariaControls=${this._listboxId}
+            .ariaExpanded=${isExpanded ? "true" : "false"}
+            .ariaActiveDescendant=${this._focusedItem?.id || null}
           ></smart-input>
           ${this._isLoading
             ? this._spinnerElement
@@ -256,6 +268,7 @@ export class SmartSearch extends LitElement {
         </form>
         ${this._items.length > 0
           ? html`<smart-dropdown
+              id=${this._listboxId}
               .focusedItemId=${this._focusedItem?.id}
               @item-selected=${(event: CustomEvent) =>
                 this._handleItemSelected(event.detail.item)}
@@ -263,9 +276,7 @@ export class SmartSearch extends LitElement {
               .items=${this._items}
             ></smart-dropdown>`
           : ""}
-        ${this._showNoResults && this._items.length === 0
-          ? this._noResultElement
-          : ""}
+        ${this._showNoResults ? this._noResultElement : ""}
       </div>
     `;
   }
