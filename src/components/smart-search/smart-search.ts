@@ -1,7 +1,8 @@
 import { html, LitElement } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, state, query } from "lit/decorators.js";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
+import { computePosition, flip, size, autoUpdate } from "@floating-ui/dom";
 
 import "../smart-dropdown/smart-dropdown.js";
 import "../smart-input/smart-input.js";
@@ -14,6 +15,14 @@ type SearchProvider = (query: string) => Promise<any[]>;
 @customElement("smart-search")
 export class SmartSearch extends LitElement {
   static styles = styles;
+
+  @query("smart-input")
+  private _inputElement!: HTMLElement;
+
+  @query("smart-dropdown")
+  private _dropdownElement!: HTMLElement;
+
+  private _cleanupFloatingUI: (() => void) | null = null;
 
   @property({ attribute: false })
   searchProvider: SearchProvider = async () => [];
@@ -63,6 +72,64 @@ export class SmartSearch extends LitElement {
     this._isLoading = false;
   }, 300);
 
+  updated(changedProperties: Map<string | symbol, unknown>) {
+    if (changedProperties.has("_items") && this._items.length > 0) {
+      this._updateDropdownPosition();
+    }
+  }
+
+  private _clearFloatingUI() {
+    if (this._cleanupFloatingUI) {
+      this._cleanupFloatingUI();
+      this._cleanupFloatingUI = null;
+    }
+  }
+
+  private _hideDropdown() {
+    this._items = [];
+    this._showNoResults = false;
+    this._clearFloatingUI();
+  }
+
+  private _updateDropdownPosition() {
+    this._clearFloatingUI();
+
+    if (!this._inputElement || !this._dropdownElement) {
+      return;
+    }
+
+    this._cleanupFloatingUI = autoUpdate(
+      this._inputElement,
+      this._dropdownElement,
+      async () => {
+        const { x, y } = await computePosition(
+          this._inputElement,
+          this._dropdownElement,
+          {
+            placement: "bottom-start",
+            middleware: [
+              flip(),
+              size({
+                padding: 8,
+                apply: ({ availableHeight, rects }) => {
+                  Object.assign(this._dropdownElement.style, {
+                    width: `${rects.reference.width}px`,
+                    maxHeight: `${availableHeight}px`,
+                  });
+                },
+              }),
+            ],
+          }
+        );
+
+        Object.assign(this._dropdownElement.style, {
+          left: `${x}px`,
+          top: `${y}px`,
+        });
+      }
+    );
+  }
+
   private _handleInputChange(event: CustomEvent) {
     this._inputValue = event.detail.value;
     this._selectedItem = null;
@@ -72,8 +139,7 @@ export class SmartSearch extends LitElement {
 
   private _handleClear() {
     this._inputValue = "";
-    this._items = [];
-    this._showNoResults = false;
+    this._hideDropdown();
   }
 
   private _handleFocusIn() {
@@ -83,9 +149,7 @@ export class SmartSearch extends LitElement {
   private _handleItemSelected(selectedItem: SearchResultItem) {
     this._selectedItem = selectedItem;
     this._inputValue = this._selectedItem?.primaryText || "";
-    this._items = [];
-    this._showNoResults = false;
-    this._focusedItem = null;
+    this._hideDropdown();
     this.dispatchEvent(
       new CustomEvent("search-item-selected", {
         detail: { item: this._selectedItem },
@@ -104,7 +168,6 @@ export class SmartSearch extends LitElement {
 
   private _handleKeyDown = (event: KeyboardEvent) => {
     let currentIndex;
-    console.log("Key down event:", event.key);
     switch (event.key) {
       case "ArrowDown":
         currentIndex = -1;
@@ -138,8 +201,7 @@ export class SmartSearch extends LitElement {
         }
         break;
       case "Escape":
-        this._items = [];
-        this._showNoResults = false;
+        this._hideDropdown();
         this._focusedItem = null;
         break;
       default:
@@ -157,8 +219,7 @@ export class SmartSearch extends LitElement {
   private _handleGlobalPointerDown = (event: PointerEvent) => {
     const path = event.composedPath();
     if (!path.includes(this)) {
-      this._items = [];
-      this._showNoResults = false;
+      this._hideDropdown();
     }
   };
 
@@ -170,11 +231,12 @@ export class SmartSearch extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener("pointerdown", this._handleGlobalPointerDown);
+    this._clearFloatingUI();
   }
 
   protected render() {
     return html`
-      <div>
+      <div style="position: relative;">
         <form
           class="search-container"
           @keydown=${this._handleKeyDown}
@@ -192,14 +254,18 @@ export class SmartSearch extends LitElement {
               ? this._clearButtonElement
               : ""}
         </form>
-        <smart-dropdown
-          .focusedItemId=${this._focusedItem?.id}
-          @item-selected=${(event: CustomEvent) =>
-            this._handleItemSelected(event.detail.item)}
-          @item-hovered=${this._handleItemHovered}
-          .items=${this._items}
-        ></smart-dropdown>
-        ${this._showNoResults ? this._noResultElement : ""}
+        ${this._items.length > 0
+          ? html`<smart-dropdown
+              .focusedItemId=${this._focusedItem?.id}
+              @item-selected=${(event: CustomEvent) =>
+                this._handleItemSelected(event.detail.item)}
+              @item-hovered=${this._handleItemHovered}
+              .items=${this._items}
+            ></smart-dropdown>`
+          : ""}
+        ${this._showNoResults && this._items.length === 0
+          ? this._noResultElement
+          : ""}
       </div>
     `;
   }

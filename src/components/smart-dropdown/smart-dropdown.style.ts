@@ -3,13 +3,14 @@ import { css } from "lit";
 export const dropdownStyles = css`
   :host {
     display: block;
+    position: absolute;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     background-color: #fff;
     overflow: hidden;
-    max-height: 50vh;
     overflow-y: auto;
+    z-index: 10;
   }
 
   ul {
