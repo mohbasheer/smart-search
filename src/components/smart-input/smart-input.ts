@@ -59,6 +59,9 @@ export class SmartInput extends LitElement {
   @property({ type: String, attribute: "aria-activedescendant" })
   ariaActiveDescendant: string | null = null;
 
+  @property({ type: String, reflect: true })
+  theme: string = "light";
+
   static styles = [baseInputStyles];
 
   private _handleInput(event: Event) {

@@ -2,6 +2,7 @@ import { html, LitElement } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
+import { theme } from "./themes.js";
 import { computePosition, flip, size, autoUpdate } from "@floating-ui/dom";
 import { nanoid } from "nanoid";
 
@@ -15,7 +16,10 @@ type SearchProvider = (query: string) => Promise<any[]>;
 
 @customElement("smart-search")
 export class SmartSearch extends LitElement {
-  static styles = styles;
+  static styles = [theme, styles];
+
+  @property({ type: String, reflect: true })
+  theme: string = "light";
 
   @query("smart-input")
   private _inputElement!: HTMLElement;
@@ -270,6 +274,7 @@ export class SmartSearch extends LitElement {
           @submit=${this._handleSubmit}
         >
           <smart-input
+            theme=${this.theme}
             .value=${this._inputValue}
             @input-changed=${this._handleInputChange}
             @focus-in=${this._handleFocusIn}

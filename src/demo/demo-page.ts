@@ -65,6 +65,7 @@ export class DemoPage extends LitElement {
           .resultMapper=${this.resultMapper}
           @search-item-selected=${this._handleItemSelected1}
           id="smart-search"
+          theme="light"
         ></smart-search>
         ${this._renderCustomerDetails(this._selectedItem1)}
       </div>
@@ -75,6 +76,7 @@ export class DemoPage extends LitElement {
         <dialog @close=${this._closeDialog}>
           <h3>Search Customers</h3>
           <smart-search
+            theme="light"
             .searchProvider=${queryCustomers}
             .resultMapper=${this.resultMapper}
             @search-item-selected=${this._handleItemSelected2}

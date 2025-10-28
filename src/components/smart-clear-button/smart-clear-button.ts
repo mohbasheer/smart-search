@@ -1,10 +1,13 @@
 import { html, LitElement, svg } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { styles } from "./smart-clear-button.styles";
 
 @customElement("smart-clear-button")
 export class SmartClearButton extends LitElement {
   static styles = styles;
+
+  @property({ type: String, reflect: true })
+  theme: string = "light";
 
   private _handleClick() {
     this.dispatchEvent(

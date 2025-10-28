@@ -19,6 +19,9 @@ export class SmartDropdown extends LitElement {
   @property({ type: Array })
   items: SearchResultItem[] = [];
 
+  @property({ type: String, reflect: true })
+  theme: string = "light";
+
   @property({ type: String })
   focusedItemId?: string;
 

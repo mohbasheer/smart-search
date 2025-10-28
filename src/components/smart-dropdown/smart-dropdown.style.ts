@@ -4,13 +4,14 @@ export const dropdownStyles = css`
   :host {
     display: block;
     position: absolute;
-    border: 1px solid #ccc;
+    border: 1px solid var(--smart-search-border-color, #ccc);
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    background-color: #fff;
+    background-color: var(--smart-search-background-color, #fff);
     overflow: hidden;
     overflow-y: auto;
     z-index: 10;
+    color: var(--smart-search-font-color, #111111);
   }
 
   ul {
@@ -22,7 +23,7 @@ export const dropdownStyles = css`
   li {
     padding: 10px 12px;
     cursor: pointer;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--smart-search-border-color, #eee);
   }
 
   li:last-child {
@@ -30,7 +31,7 @@ export const dropdownStyles = css`
   }
 
   li.selected {
-    background-color: #e0e0e0;
+    background-color: var(--smart-search-dropdown-hover-color, #e0e0e0);
     font-weight: bold;
   }
 

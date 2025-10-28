@@ -22,12 +22,12 @@ export const styles = css`
   .no-results {
     padding: 16px;
     text-align: center;
-    color: #757575;
+    color: var(--smart-search-font-color, #757575);
     font-style: italic;
-    border: 1px solid #ccc;
+    border: 1px solid var(--smart-search-border-color, #ccc);
     border-top: none;
     border-radius: 0 0 4px 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    background-color: #fff;
+    background-color: var(--smart-search-background-color, #fff);
   }
 `;

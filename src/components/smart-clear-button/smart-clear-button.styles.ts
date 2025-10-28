@@ -14,11 +14,11 @@ export const styles = css`
     padding: 0;
     width: 16px;
     height: 16px;
-    color: #757575;
+    color: var(--smart-search-button-background-color, #757575);
   }
 
   button:hover {
-    color: #000;
+    color: var(--smart-search-button-hover-background-color, #000);
   }
 
   svg {
