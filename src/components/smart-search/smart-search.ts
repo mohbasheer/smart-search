@@ -1,9 +1,8 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state, query } from "lit/decorators.js";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
 import { theme } from "./themes.js";
-import { computePosition, flip, size, autoUpdate } from "@floating-ui/dom";
 import { nanoid } from "nanoid";
 
 import "../smart-dropdown/smart-dropdown.js";
@@ -11,6 +10,7 @@ import "../smart-input/smart-input.js";
 import "../smart-spinner/smart-spinner.js";
 import "../smart-clear-button/smart-clear-button.js";
 import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
+import { FloatingUIController } from "./floating-ui-controller.js";
 
 type SearchProvider = (query: string) => Promise<any[]>;
 
@@ -27,8 +27,8 @@ export class SmartSearch extends LitElement {
   @query("smart-dropdown")
   private _dropdownElement!: HTMLElement;
 
-  private _cleanupFloatingUI: (() => void) | null = null;
   private _listboxId: string;
+  private _floatingController: FloatingUIController;
 
   @property({ attribute: false })
   searchProvider: SearchProvider = async () => [];
@@ -73,6 +73,7 @@ export class SmartSearch extends LitElement {
   constructor() {
     super();
     this._listboxId = `smart-dropdown-listbox-${nanoid(6)}`;
+    this._floatingController = new FloatingUIController(this);
   }
 
   private _debouncedSearch = debounce(async (query: string) => {
@@ -98,60 +99,18 @@ export class SmartSearch extends LitElement {
 
   updated(changedProperties: Map<string | symbol, unknown>) {
     if (changedProperties.has("_items") && this._items.length > 0) {
-      this._updateDropdownPosition();
-    }
-  }
-
-  private _clearFloatingUI() {
-    if (this._cleanupFloatingUI) {
-      this._cleanupFloatingUI();
-      this._cleanupFloatingUI = null;
+      this._floatingController.setElements(
+        this._inputElement,
+        this._dropdownElement
+      );
+      this._floatingController.updatePosition();
     }
   }
 
   private _hideDropdown() {
     this._items = [];
     this._showNoResults = false;
-    this._clearFloatingUI();
-  }
-
-  private _updateDropdownPosition() {
-    this._clearFloatingUI();
-
-    if (!this._inputElement || !this._dropdownElement) {
-      return;
-    }
-
-    this._cleanupFloatingUI = autoUpdate(
-      this._inputElement,
-      this._dropdownElement,
-      async () => {
-        const { x, y } = await computePosition(
-          this._inputElement,
-          this._dropdownElement,
-          {
-            placement: "bottom-start",
-            middleware: [
-              flip(),
-              size({
-                padding: 8,
-                apply: ({ availableHeight, rects }) => {
-                  Object.assign(this._dropdownElement.style, {
-                    width: `${rects.reference.width}px`,
-                    maxHeight: `${availableHeight}px`,
-                  });
-                },
-              }),
-            ],
-          }
-        );
-
-        Object.assign(this._dropdownElement.style, {
-          left: `${x}px`,
-          top: `${y}px`,
-        });
-      }
-    );
+    this._floatingController.clear();
   }
 
   private _handleInputChange(event: CustomEvent) {
@@ -261,7 +220,6 @@ export class SmartSearch extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener("pointerdown", this._handleGlobalPointerDown);
-    this._clearFloatingUI();
   }
 
   protected render() {
