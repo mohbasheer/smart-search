@@ -50,12 +50,18 @@ export class SmartSearch extends LitElement {
   @state()
   private _focusedItem: SearchResultItem | null = null;
 
-  private _noResultElement = html`<div class="no-results">
+  @state()
+  private _errorMessage: string | null = null;
+
+  private _noResultElement = html`<div
+    class="no-results"
+    role="status"
+    aria-live="polite"
+  >
     No results found
   </div>`;
 
   private _spinnerElement = html`<smart-spinner></smart-spinner>`;
-
   private _clearButtonElement = html`<smart-clear-button
     @clear=${this._handleClear}
   ></smart-clear-button>`;
@@ -73,10 +79,17 @@ export class SmartSearch extends LitElement {
     }
     this._isLoading = true;
     this._showNoResults = false;
-    const results = await this.searchProvider(query);
-    this._items = results.map(this.resultMapper);
-    this._showNoResults = results.length === 0;
-    this._isLoading = false;
+    this._errorMessage = null;
+    try {
+      const results = await this.searchProvider(query);
+      this._items = results.map(this.resultMapper);
+      this._showNoResults = results.length === 0;
+    } catch (error) {
+      this._errorMessage = "An error occurred while searching.";
+      console.error("Search failed:", error);
+    } finally {
+      this._isLoading = false;
+    }
   }, 300);
 
   updated(changedProperties: Map<string | symbol, unknown>) {
@@ -141,6 +154,7 @@ export class SmartSearch extends LitElement {
     this._inputValue = event.detail.value;
     this._selectedItem = null;
     this._focusedItem = null;
+    this._errorMessage = null;
     this._debouncedSearch(this._inputValue);
   }
 
@@ -177,6 +191,7 @@ export class SmartSearch extends LitElement {
     let currentIndex;
     switch (event.key) {
       case "ArrowDown":
+        event.preventDefault();
         currentIndex = -1;
         if (this._focusedItem) {
           currentIndex = this._items.findIndex(
@@ -190,6 +205,7 @@ export class SmartSearch extends LitElement {
         }
         break;
       case "ArrowUp":
+        event.preventDefault();
         currentIndex = this._items.length;
         if (this._focusedItem) {
           currentIndex = this._items.findIndex(
@@ -210,6 +226,9 @@ export class SmartSearch extends LitElement {
       case "Escape":
         this._hideDropdown();
         this._focusedItem = null;
+        break;
+      case "Tab":
+        this._hideDropdown();
         break;
       default:
         break;
@@ -277,6 +296,11 @@ export class SmartSearch extends LitElement {
             ></smart-dropdown>`
           : ""}
         ${this._showNoResults ? this._noResultElement : ""}
+        ${this._errorMessage
+          ? html`<div class="error-message" role="alert" aria-live="assertive">
+              ${this._errorMessage}
+            </div>`
+          : ""}
       </div>
     `;
   }
