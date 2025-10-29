@@ -11,7 +11,7 @@ import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
 import "../smart-input/smart-input.js";
 import "../smart-spinner/smart-spinner.js";
 import { FloatingUIController } from "./floating-ui-controller.js";
-import "./smart-filter-bar.js";
+import "../smart-filter/smart-filter.js";
 
 type SearchProvider = (query: string) => Promise<any[]>;
 
