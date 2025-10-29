@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { baseInputStyles } from "./smart-input.style.js";
 
@@ -62,6 +62,9 @@ export class SmartInput extends LitElement {
   @property({ type: String, reflect: true })
   theme: string = "light";
 
+  @query("input")
+  private _inputElement!: HTMLInputElement;
+
   static styles = [baseInputStyles];
 
   private _handleInput(event: Event) {
@@ -108,12 +111,19 @@ export class SmartInput extends LitElement {
     );
   }
 
+  private _handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      this._inputElement.blur();
+    }
+  }
+
   protected render() {
     return html`
       <input
         id="smart-input"
         type="text"
         .value=${this.value}
+        @keydown=${this._handleKeyDown}
         placeholder=${ifDefined(this.placeholder)}
         maxlength=${ifDefined(this.maxlength)}
         ?disabled=${this.disabled}

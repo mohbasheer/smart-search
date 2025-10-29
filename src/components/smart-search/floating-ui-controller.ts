@@ -1,11 +1,5 @@
+import { autoUpdate, computePosition, offset, size } from "@floating-ui/dom";
 import { ReactiveController, ReactiveControllerHost } from "lit";
-import {
-  computePosition,
-  flip,
-  size,
-  offset,
-  autoUpdate,
-} from "@floating-ui/dom";
 
 export class FloatingUIController implements ReactiveController {
   private host: ReactiveControllerHost;
@@ -41,7 +35,6 @@ export class FloatingUIController implements ReactiveController {
             placement: "bottom-start",
             middleware: [
               offset(3),
-              flip(),
               size({
                 padding: 8,
                 apply: ({ availableHeight, rects }) => {

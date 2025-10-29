@@ -1,16 +1,17 @@
-import { html, LitElement, PropertyValues } from "lit";
-import { customElement, property, state, query } from "lit/decorators.js";
+import { html, LitElement } from "lit";
+import { customElement, property, query, state } from "lit/decorators.js";
+import { nanoid } from "nanoid";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
 import { theme } from "./themes.js";
-import { nanoid } from "nanoid";
 
+import "../smart-clear-button/smart-clear-button.js";
 import "../smart-dropdown/smart-dropdown.js";
+import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
 import "../smart-input/smart-input.js";
 import "../smart-spinner/smart-spinner.js";
-import "../smart-clear-button/smart-clear-button.js";
-import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
 import { FloatingUIController } from "./floating-ui-controller.js";
+import "./smart-filter-bar.js";
 
 type SearchProvider = (query: string) => Promise<any[]>;
 
@@ -187,6 +188,7 @@ export class SmartSearch extends LitElement {
         }
         break;
       case "Escape":
+        event.preventDefault();
         this._hideDropdown();
         this._focusedItem = null;
         break;
@@ -226,6 +228,7 @@ export class SmartSearch extends LitElement {
     const isExpanded = this._items.length > 0;
     return html`
       <div style="position: relative;">
+        <smart-filter-bar></smart-filter-bar>
         <form
           class="search-container"
           @keydown=${this._handleKeyDown}
