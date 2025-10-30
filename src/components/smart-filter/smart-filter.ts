@@ -39,6 +39,7 @@ export class SmartFilter extends LitElement {
           @change=${(event: Event) => this._handleChange(event, config)}
         />`;
       case "dropdown":
+        //TODO: Need to use smart-dropdown component here
         return html`<select
           id="${baseId}"
           aria-labelledby="${baseId}-label"
