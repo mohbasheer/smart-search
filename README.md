@@ -44,7 +44,13 @@ private resultMapper = (data: Customer): SearchResultItem => ({
 ### HTML
 
 ```html
-<smart-search id="my-search" theme="light" exclude="@#$%^&*()!"></smart-search>
+<smart-search
+  .searchProvider="${queryCustomers}"
+  .resultMapper="${this.resultMapper}"
+  id="my-search"
+  theme="light"
+  exclude="@#$%^&*()!"
+></smart-search>
 ```
 
 ### TODO
