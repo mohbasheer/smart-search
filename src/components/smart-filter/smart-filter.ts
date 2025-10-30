@@ -27,16 +27,21 @@ export class SmartFilter extends LitElement {
     }
   }
 
-  private _getComponent(config: FilterConfig) {
+  private _getComponent(config: FilterConfig, defaultId: number) {
+    const baseId = `filter-${config.filterId || defaultId}`;
     switch (config.componentType) {
       case "checkbox":
         return html`<input
           type="checkbox"
+          id="${baseId}"
+          aria-labelledby="${baseId}-label"
           @keydown=${this._handleEscapeKey}
           @change=${(event: Event) => this._handleChange(event, config)}
         />`;
       case "dropdown":
         return html`<select
+          id="${baseId}"
+          aria-labelledby="${baseId}-label"
           @keydown=${this._handleEscapeKey}
           @change=${(event: Event) => this._handleChange(event, config)}
         >
@@ -55,12 +60,13 @@ export class SmartFilter extends LitElement {
 
   protected render() {
     return html`
-      <div class="filter-row">
-        ${this.config.map((data) => {
+      <div class="filter-row" role="group" aria-label="Filters">
+        ${this.config.map((data, index) => {
+          const baseId = `filter-${data.filterId || index}`;
           return html`
             <div class="filter-group">
-              <label>${data.label}</label>
-              ${this._getComponent(data)}
+              <label id="${baseId}-label" for="${baseId}">${data.label}</label>
+              ${this._getComponent(data, index)}
             </div>
           `;
         })}

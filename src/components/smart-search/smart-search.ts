@@ -23,9 +23,8 @@ interface FilterState {
 @customElement("smart-search")
 export class SmartSearch extends LitElement {
   static styles = [theme, styles];
-
-  @property({ type: String, reflect: true })
-  theme: string = "light";
+  private _listboxId: string;
+  private _floatingController: FloatingUIController;
 
   @query("smart-input")
   private _inputElement!: HTMLElement;
@@ -33,14 +32,20 @@ export class SmartSearch extends LitElement {
   @query("smart-dropdown")
   private _dropdownElement!: HTMLElement;
 
-  private _listboxId: string;
-  private _floatingController: FloatingUIController;
+  @property({ type: String, reflect: true })
+  theme: string = "light";
 
   @property({ attribute: false })
   searchProvider: SearchProvider = async () => [];
 
   @property({ attribute: false })
   resultMapper: (item: any) => SearchResultItem = (item: any) => item;
+
+  /**
+   * A string of characters to prevent from being entered.
+   */
+  @property({ type: String })
+  exclude: string = "";
 
   private _searchResultCache: SearchResultItem[] = [];
 
@@ -97,6 +102,9 @@ export class SmartSearch extends LitElement {
 
   protected willUpdate(_changedProperties: PropertyValues): void {
     if (_changedProperties.has("filterConfig")) {
+      /**
+       * update filter state when config changes
+       */
       this._filterState = this.filterConfig.map((config) => ({
         filterId: config.filterId,
         value:
@@ -318,6 +326,7 @@ export class SmartSearch extends LitElement {
           <div class="input-wrapper">
             <smart-input
               theme=${this.theme}
+              .exclude=${this.exclude}
               .value=${this._inputValue}
               @input-changed=${this._handleInputChange}
               @focus-in=${this._handleFocusIn}

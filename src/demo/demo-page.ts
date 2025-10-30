@@ -101,6 +101,7 @@ export class DemoPage extends LitElement {
       <div class="demo-section">
         <h2>Basic Search Input</h2>
         <smart-search
+          exclude="@#$%^&*()!"
           .searchProvider=${queryCustomers}
           .resultMapper=${this.resultMapper}
           @search-item-selected=${this._handleItemSelected1}
