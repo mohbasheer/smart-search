@@ -1,10 +1,11 @@
-import { html, LitElement, PropertyValues } from "lit";
+import { html, PropertyValues } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { nanoid } from "nanoid/non-secure";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
 import { theme } from "./themes.js";
 
+import { BaseComponent } from "../base.js";
 import "../smart-clear-button/smart-clear-button.js";
 import "../smart-dropdown/smart-dropdown.js";
 import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
@@ -21,7 +22,7 @@ interface FilterState {
 }
 
 @customElement("smart-search")
-export class SmartSearch extends LitElement {
+export class SmartSearch extends BaseComponent {
   static styles = [theme, styles];
   private _listboxId: string;
   private _floatingController: FloatingUIController;
@@ -31,9 +32,6 @@ export class SmartSearch extends LitElement {
 
   @query("smart-dropdown")
   private _dropdownElement!: HTMLElement;
-
-  @property({ type: String, reflect: true })
-  theme: string = "light";
 
   @property({ attribute: false })
   searchProvider: SearchProvider = async () => [];

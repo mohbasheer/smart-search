@@ -55,5 +55,7 @@ export const filterStyles = css`
   }
   select {
     min-width: 90px;
+    background-color: var(--smart-search-background-color, #fff);
+    color: var(--smart-search-foreground-color, #111);
   }
 `;

@@ -1,5 +1,6 @@
-import { html, LitElement } from "lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { BaseComponent } from "../base.js";
 import { dropdownStyles } from "./smart-dropdown.style.js";
 
 export interface SearchResultItem<T = any> {
@@ -13,14 +14,11 @@ export interface SearchResultItem<T = any> {
 }
 
 @customElement("smart-dropdown")
-export class SmartDropdown extends LitElement {
+export class SmartDropdown extends BaseComponent {
   static styles = [dropdownStyles];
 
   @property({ type: Array })
   items: SearchResultItem[] = [];
-
-  @property({ type: String, reflect: true })
-  theme: string = "light";
 
   @property({ type: String })
   focusedItemId?: string;

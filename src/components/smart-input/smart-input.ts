@@ -1,10 +1,11 @@
-import { html, LitElement } from "lit";
+import { html } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
+import { BaseComponent } from "../base.js";
 import { baseInputStyles } from "./smart-input.style.js";
 
 @customElement("smart-input")
-export class SmartInput extends LitElement {
+export class SmartInput extends BaseComponent {
   /**
    * The placeholder text to display when the input is empty.
    */
@@ -58,9 +59,6 @@ export class SmartInput extends LitElement {
    */
   @property({ type: String, attribute: "aria-activedescendant" })
   ariaActiveDescendant: string | null = null;
-
-  @property({ type: String, reflect: true })
-  theme: string = "light";
 
   @query("input")
   private _inputElement!: HTMLInputElement;

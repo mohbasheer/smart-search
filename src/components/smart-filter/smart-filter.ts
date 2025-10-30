@@ -1,10 +1,11 @@
-import { html, LitElement } from "lit";
+import { html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { FilterConfig } from "./type";
+import { BaseComponent } from "../base";
 import { filterStyles } from "./smart-filter.style.js";
+import { FilterConfig } from "./type";
 
 @customElement("smart-filter")
-export class SmartFilter extends LitElement {
+export class SmartFilter extends BaseComponent {
   static styles = [filterStyles];
   @property({ attribute: false })
   config: FilterConfig[] = [];
