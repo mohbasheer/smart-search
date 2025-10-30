@@ -1,6 +1,6 @@
 import { html, LitElement, PropertyValues } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
-import { nanoid } from "nanoid";
+import { nanoid } from "nanoid/non-secure";
 import { debounce } from "../../utils/debounce.js";
 import { styles } from "./smart-search.styles.js";
 import { theme } from "./themes.js";

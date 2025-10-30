@@ -67,6 +67,7 @@ export class SmartDropdown extends LitElement {
       <ul
         role="listbox"
         id=${this.id || "smart-dropdown-listbox"}
+        aria-label="Dropdown options"
         @pointerover=${this._handlePointerOver}
       >
         ${this.items.map(
