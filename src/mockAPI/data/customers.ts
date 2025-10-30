@@ -9,31 +9,31 @@ export const mockCustomers = [
   {
     customerId: "cust-101",
     name: "Ricardo Montero",
-    email: "ricardo.m@example.com",
+    email: "",
     memberSince: "2020-01-15",
   },
   {
     customerId: "cust-102",
     name: "Patricia Coleman",
-    email: "patricia.c@example.com",
+    email: "",
     memberSince: "2019-11-20",
   },
   {
     customerId: "cust-103",
     name: "Eric Estrada",
-    email: "eric.e@example.com",
+    email: "",
     memberSince: "2021-03-10",
   },
   {
     customerId: "cust-104",
     name: "Ramona Flowers",
-    email: "ramona.f@example.com",
+    email: "",
     memberSince: "2018-07-22",
   },
   {
     customerId: "cust-105",
     name: "Frederick Douglass",
-    email: "frederick.d@example.com",
+    email: "",
     memberSince: "2022-02-01",
   },
   {

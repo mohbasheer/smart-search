@@ -1,100 +1,54 @@
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
-import { styles } from "./smart-filter.style.js";
+import { FilterConfig } from "./type";
 
-@customElement("smart-filter-bar")
-export class SmartFilterBar extends LitElement {
-  static styles = [styles];
-  @property({ type: Boolean })
-  hasEmail = false;
+@customElement("smart-filter")
+export class SmartFilter extends LitElement {
+  @property({ attribute: false })
+  config: FilterConfig[] = [];
 
-  @property({ type: String })
-  joinedBefore = "";
-
-  private _handleEmailChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.hasEmail = target.checked;
+  private _handleChange = (event: Event, config: FilterConfig) => {
+    const el = event.target as HTMLInputElement;
+    const value = config.componentType === "checkbox" ? el.checked : el.value;
     this.dispatchEvent(
-      new CustomEvent("filters-changed", {
-        detail: { hasEmail: this.hasEmail, joinedBefore: this.joinedBefore },
+      new CustomEvent("filter-applied", {
+        detail: { filterId: config.filterId, value },
         bubbles: true,
         composed: true,
       })
     );
-  }
+  };
 
-  private _handleDateChange(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.joinedBefore = target.value;
-    this.dispatchEvent(
-      new CustomEvent("filters-changed", {
-        detail: { hasEmail: this.hasEmail, joinedBefore: this.joinedBefore },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
-  private _handleKeyDown(event: KeyboardEvent) {
-    // Allow keyboard navigation within the filter bar
-    // but don't prevent default to maintain normal form behavior
-    if (event.key === "Enter" || event.key === " ") {
-      // Let the inputs handle their own events
-      return;
+  private _handleEscapeKey(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      (event.target as HTMLInputElement).blur();
     }
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener("keydown", this._handleKeyDown);
+  private _getComponent(config: FilterConfig) {
+    switch (config.componentType) {
+      case "checkbox":
+        return html`<input
+          type="checkbox"
+          @keydown=${this._handleEscapeKey}
+          @change=${(event: Event) => this._handleChange(event, config)}
+        />`;
+      default:
+        return "";
+    }
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener("keydown", this._handleKeyDown);
-  }
-
-  render() {
+  protected render() {
     return html`
-      <div class="filter-bar" role="group" aria-label="Search filters">
-        <div class="filter-header">
-          <span class="filter-title">Filters</span>
-        </div>
-        <div class="filter-controls">
-          <div class="filter-item">
-            <label class="filter-label" for="hasEmail">
-              <input
-                type="checkbox"
-                .checked=${this.hasEmail}
-                @change=${this._handleEmailChange}
-                id="hasEmail"
-                aria-describedby="hasEmail-desc"
-              />
-              <span class="checkmark" aria-hidden="true"></span>
-              Has Email
-            </label>
-            <span id="hasEmail-desc" class="sr-only">
-              Filter results to show only customers with valid email addresses
-            </span>
-          </div>
-          <div class="filter-item">
-            <label class="filter-label" for="joinedBefore">
-              Joined Before
-              <input
-                type="date"
-                .value=${this.joinedBefore}
-                @change=${this._handleDateChange}
-                id="joinedBefore"
-                class="date-input"
-                aria-describedby="joinedBefore-desc"
-              />
-            </label>
-            <span id="joinedBefore-desc" class="sr-only">
-              Filter results to show customers who joined before the selected
-              date
-            </span>
-          </div>
-        </div>
+      <div>
+        ${this.config.map((data) => {
+          return html`
+            <div>
+              <label>${data.label}</label>
+              ${this._getComponent(data)}
+            </div>
+          `;
+        })}
       </div>
     `;
   }
