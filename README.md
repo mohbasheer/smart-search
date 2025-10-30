@@ -22,6 +22,25 @@ A customizable Lit component for building a robust search input with features li
 
 The `smart-search` component requires a `searchProvider` (an asynchronous function to fetch results) and a `resultMapper` (a function to transform raw results into a format the dropdown understands).
 
+```
+ Raw data:
+
+{
+    customerId: "cust-101",
+    name: "Ricardo Montero",
+    email: "",
+    memberSince: "2020-01-15",
+  },
+```
+
+```
+private resultMapper = (data: Customer): SearchResultItem => ({
+    id: data.customerId,
+    primaryText: data.name,
+    original: data,
+  });
+```
+
 ### HTML
 
 ```html
