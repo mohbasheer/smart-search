@@ -150,7 +150,6 @@ export class SmartSearch extends LitElement {
       this._showNoResults = this._searchResult.length === 0;
     } catch (error) {
       this._errorMessage = "An error occurred while searching.";
-      console.error("Search failed:", error);
     } finally {
       this._isLoading = false;
     }

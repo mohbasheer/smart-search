@@ -7,10 +7,20 @@ import "./smart-search.js";
 describe("SmartSearch - Accessibility", () => {
   let element: SmartSearch;
   const mockResults: SearchResultItem[] = [
-    { id: "1", primaryText: "Apple", secondaryText: "Fruit", original: {} },
-    { id: "2", primaryText: "Banana", secondaryText: "Fruit", original: {} },
     {
-      id: "3",
+      id: "item-1",
+      primaryText: "Apple",
+      secondaryText: "Fruit",
+      original: {},
+    },
+    {
+      id: "item-2",
+      primaryText: "Banana",
+      secondaryText: "Fruit",
+      original: {},
+    },
+    {
+      id: "item-3",
       primaryText: "Carrot",
       secondaryText: "Vegetable",
       original: {},
@@ -84,7 +94,7 @@ describe("SmartSearch - Accessibility", () => {
 
       await element.updateComplete;
 
-      expect(input?.ariaActiveDescendant).to.equal("1");
+      expect(input?.ariaActiveDescendant).to.equal("item-1");
     });
 
     it("should clear aria-activedescendant when no item is focused", async () => {
@@ -121,14 +131,14 @@ describe("SmartSearch - Accessibility", () => {
         new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })
       );
       await element.updateComplete;
-      expect(input?.ariaActiveDescendant).to.equal("1");
+      expect(input?.ariaActiveDescendant).to.equal("item-1");
 
       // Press ArrowDown again
       form?.dispatchEvent(
         new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })
       );
       await element.updateComplete;
-      expect(input?.ariaActiveDescendant).to.equal("2");
+      expect(input?.ariaActiveDescendant).to.equal("item-2");
     });
 
     it("should navigate up through items with ArrowUp", async () => {
@@ -140,14 +150,14 @@ describe("SmartSearch - Accessibility", () => {
         new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true })
       );
       await element.updateComplete;
-      expect(input?.ariaActiveDescendant).to.equal("3");
+      expect(input?.ariaActiveDescendant).to.equal("item-3");
 
       // Press ArrowUp again
       form?.dispatchEvent(
         new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true })
       );
       await element.updateComplete;
-      expect(input?.ariaActiveDescendant).to.equal("2");
+      expect(input?.ariaActiveDescendant).to.equal("item-2");
     });
 
     it("should select focused item on Enter key", async () => {
@@ -168,7 +178,7 @@ describe("SmartSearch - Accessibility", () => {
       );
 
       const event = await listener;
-      expect(event.detail.item.id).to.equal("1");
+      expect(event.detail.item.id).to.equal("item-1");
     });
 
     it("should close dropdown on Escape key", async () => {
@@ -373,6 +383,40 @@ describe("SmartSearch - Accessibility", () => {
       form?.dispatchEvent(submitEvent);
 
       expect(submitEvent.defaultPrevented).to.be.true;
+    });
+  });
+
+  describe("parent communication", () => {
+    it("shows results in dropdown when user inputs data", async () => {
+      const expectedQuery = "le";
+      let resultQuery = "";
+      element.searchProvider = async (q) => {
+        resultQuery = q;
+        return mockResults.filter((item) =>
+          item.primaryText.toLowerCase().includes(q.toLowerCase())
+        );
+      };
+
+      const input = element.shadowRoot?.querySelector("smart-input");
+      input?.dispatchEvent(
+        new CustomEvent("input-changed", {
+          detail: { value: expectedQuery },
+          bubbles: true,
+        })
+      );
+
+      await waitUntil(
+        () => element.shadowRoot?.querySelector("smart-dropdown") !== null,
+        "Dropdown should appear",
+        { timeout: 2000 }
+      );
+
+      expect(resultQuery).to.equal(expectedQuery);
+      const dropdown = element.shadowRoot?.querySelector("smart-dropdown");
+      expect(dropdown).to.exist;
+      const items = dropdown?.shadowRoot?.querySelectorAll("li");
+      expect(items?.length).to.equal(1);
+      expect(items?.[0].textContent).to.contain("Apple");
     });
   });
 });
