@@ -4,6 +4,7 @@ import "../index";
 import { queryCustomers } from "../mockAPI";
 import { Customer } from "../mockAPI/data/customers";
 import { SearchResultItem } from "../index";
+import { FilterConfig } from "../components/smart-filter/type";
 
 @customElement("demo-page")
 export class DemoPage extends LitElement {
@@ -38,6 +39,45 @@ export class DemoPage extends LitElement {
     this._selectedItem2 = null;
   }
 
+  private _filterConfig: FilterConfig[] = [
+    {
+      filterId: "email_filter",
+      label: "hasValidEmail",
+      componentType: "checkbox",
+      handler: (
+        items: SearchResultItem<Customer>[],
+        filterValue: boolean | string
+      ) => {
+        if (filterValue === false) {
+          return items;
+        }
+        return items.filter(
+          (item) => item.original.email && item.original.email.length > 0
+        );
+      },
+    } as FilterConfig,
+    {
+      filterId: "priority_customer",
+      label: "priorityCustomer",
+      componentType: "dropdown",
+      options: [
+        { value: "All", label: "All Customers" },
+        { value: "cust-101", label: "Ricardo Montero" },
+        { value: "cust-106", label: "Ramsey Bolton" },
+        { value: "cust-108", label: "Enrico Pallazzo" },
+      ],
+      handler: (
+        items: SearchResultItem<Customer>[],
+        filterValue: boolean | string
+      ) => {
+        if (!filterValue || filterValue === "All") {
+          return items;
+        }
+        return items.filter((item) => item.original.customerId === filterValue);
+      },
+    } as FilterConfig,
+  ];
+
   private _renderCustomerDetails(item: SearchResultItem<Customer> | null) {
     if (!item) {
       return html`<p class="no-selection">No item selected.</p>`;
@@ -64,6 +104,7 @@ export class DemoPage extends LitElement {
           .searchProvider=${queryCustomers}
           .resultMapper=${this.resultMapper}
           @search-item-selected=${this._handleItemSelected1}
+          .filterConfig=${this._filterConfig}
           id="smart-search"
           theme="light"
         ></smart-search>
@@ -77,6 +118,7 @@ export class DemoPage extends LitElement {
           <h3>Search Customers</h3>
           <smart-search
             theme="light"
+            .filterConfig=${this._filterConfig}
             .searchProvider=${queryCustomers}
             .resultMapper=${this.resultMapper}
             @search-item-selected=${this._handleItemSelected2}

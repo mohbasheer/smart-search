@@ -1,9 +1,11 @@
 import { html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { FilterConfig } from "./type";
+import { filterStyles } from "./smart-filter.style.js";
 
 @customElement("smart-filter")
 export class SmartFilter extends LitElement {
+  static styles = [filterStyles];
   @property({ attribute: false })
   config: FilterConfig[] = [];
 
@@ -33,6 +35,19 @@ export class SmartFilter extends LitElement {
           @keydown=${this._handleEscapeKey}
           @change=${(event: Event) => this._handleChange(event, config)}
         />`;
+      case "dropdown":
+        return html`<select
+          @keydown=${this._handleEscapeKey}
+          @change=${(event: Event) => this._handleChange(event, config)}
+        >
+          ${config.options?.map(
+            (option) =>
+              html`<option value=${option.value}>${option.label}</option>`
+          )}
+        </select>`;
+      case "date-picker":
+        //TODO : Implement date picker component
+        return html``;
       default:
         return "";
     }
@@ -40,10 +55,10 @@ export class SmartFilter extends LitElement {
 
   protected render() {
     return html`
-      <div>
+      <div class="filter-row">
         ${this.config.map((data) => {
           return html`
-            <div>
+            <div class="filter-group">
               <label>${data.label}</label>
               ${this._getComponent(data)}
             </div>

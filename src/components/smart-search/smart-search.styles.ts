@@ -30,4 +30,8 @@ export const styles = css`
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     background-color: var(--smart-search-background-color, #fff);
   }
+
+  .input-wrapper {
+    position: relative;
+  }
 `;

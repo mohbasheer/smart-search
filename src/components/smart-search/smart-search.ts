@@ -1,4 +1,4 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, PropertyValues } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
 import { nanoid } from "nanoid";
 import { debounce } from "../../utils/debounce.js";
@@ -8,12 +8,17 @@ import { theme } from "./themes.js";
 import "../smart-clear-button/smart-clear-button.js";
 import "../smart-dropdown/smart-dropdown.js";
 import { SearchResultItem } from "../smart-dropdown/smart-dropdown.js";
+import "../smart-filter/smart-filter.js";
+import { FilterConfig } from "../smart-filter/type.js";
 import "../smart-input/smart-input.js";
 import "../smart-spinner/smart-spinner.js";
 import { FloatingUIController } from "./floating-ui-controller.js";
-import "../smart-filter/smart-filter.js";
 
 type SearchProvider = (query: string) => Promise<any[]>;
+interface FilterState {
+  filterId: string;
+  value: string | boolean;
+}
 
 @customElement("smart-search")
 export class SmartSearch extends LitElement {
@@ -37,8 +42,10 @@ export class SmartSearch extends LitElement {
   @property({ attribute: false })
   resultMapper: (item: any) => SearchResultItem = (item: any) => item;
 
+  private _searchResultCache: SearchResultItem[] = [];
+
   @state()
-  private _items: SearchResultItem[] = [];
+  private _searchResultInternal: SearchResultItem[] = [];
 
   @state()
   private _isLoading = false;
@@ -57,6 +64,9 @@ export class SmartSearch extends LitElement {
 
   @state()
   private _errorMessage: string | null = null;
+
+  @state()
+  private _filterState: FilterState[] = [];
 
   private _noResultElement = html`<div
     class="no-results"
@@ -77,9 +87,48 @@ export class SmartSearch extends LitElement {
     this._floatingController = new FloatingUIController(this);
   }
 
+  private get _searchResult() {
+    return this._searchResultInternal;
+  }
+
+  private set _searchResult(value: SearchResultItem[]) {
+    this._searchResultInternal = this._applyFilters(value);
+  }
+
+  protected willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has("filterConfig")) {
+      this._filterState = this.filterConfig.map((config) => ({
+        filterId: config.filterId,
+        value:
+          config.defaultValue ||
+          (config.componentType === "checkbox" ? false : ""),
+      }));
+    }
+  }
+
+  private _applyFilters(items: SearchResultItem[]): SearchResultItem[] {
+    let filtered = items;
+
+    this._filterState.forEach((fState) => {
+      const config = this.filterConfig.find(
+        (config) => config.filterId === fState.filterId
+      );
+      if (config && config.handler) {
+        filtered = config.handler(filtered, fState.value);
+      }
+    });
+
+    return filtered;
+  }
+
+  private _clearResult = () => {
+    this._searchResult = [];
+    this._searchResultCache = [];
+  };
+
   private _debouncedSearch = debounce(async (query: string) => {
     if (query.length < 2) {
-      this._items = [];
+      this._clearResult();
       this._showNoResults = false;
       return;
     }
@@ -88,8 +137,9 @@ export class SmartSearch extends LitElement {
     this._errorMessage = null;
     try {
       const results = await this.searchProvider(query);
-      this._items = results.map(this.resultMapper);
-      this._showNoResults = results.length === 0;
+      this._searchResultCache = results.map(this.resultMapper);
+      this._searchResult = this._searchResultCache;
+      this._showNoResults = this._searchResult.length === 0;
     } catch (error) {
       this._errorMessage = "An error occurred while searching.";
       console.error("Search failed:", error);
@@ -99,7 +149,10 @@ export class SmartSearch extends LitElement {
   }, 300);
 
   updated(changedProperties: Map<string | symbol, unknown>) {
-    if (changedProperties.has("_items") && this._items.length > 0) {
+    if (
+      changedProperties.has("_searchResultInternal") &&
+      this._searchResult.length > 0
+    ) {
       this._floatingController.setElements(
         this._inputElement,
         this._dropdownElement
@@ -109,7 +162,7 @@ export class SmartSearch extends LitElement {
   }
 
   private _hideDropdown() {
-    this._items = [];
+    this._clearResult();
     this._showNoResults = false;
     this._floatingController.clear();
   }
@@ -158,28 +211,28 @@ export class SmartSearch extends LitElement {
         event.preventDefault();
         currentIndex = -1;
         if (this._focusedItem) {
-          currentIndex = this._items.findIndex(
+          currentIndex = this._searchResult.findIndex(
             (item) => item.id === this._focusedItem?.id
           );
         }
-        if (currentIndex >= this._items.length - 1) {
-          this._focusedItem = this._items[0];
+        if (currentIndex >= this._searchResult.length - 1) {
+          this._focusedItem = this._searchResult[0];
         } else {
-          this._focusedItem = this._items[currentIndex + 1];
+          this._focusedItem = this._searchResult[currentIndex + 1];
         }
         break;
       case "ArrowUp":
         event.preventDefault();
-        currentIndex = this._items.length;
+        currentIndex = this._searchResult.length;
         if (this._focusedItem) {
-          currentIndex = this._items.findIndex(
+          currentIndex = this._searchResult.findIndex(
             (item) => item.id === this._focusedItem?.id
           );
         }
         if (currentIndex === 0) {
-          this._focusedItem = this._items[this._items.length - 1];
+          this._focusedItem = this._searchResult[this._searchResult.length - 1];
         } else {
-          this._focusedItem = this._items[currentIndex - 1];
+          this._focusedItem = this._searchResult[currentIndex - 1];
         }
         break;
       case "Enter":
@@ -201,7 +254,7 @@ export class SmartSearch extends LitElement {
   };
 
   private _handleItemHovered = (event: CustomEvent) => {
-    const targetItem = this._items.find(
+    const targetItem = this._searchResult.find(
       (item) => item.id === event.detail.itemId
     );
     if (targetItem) this._focusedItem = targetItem;
@@ -224,41 +277,71 @@ export class SmartSearch extends LitElement {
     window.removeEventListener("pointerdown", this._handleGlobalPointerDown);
   }
 
+  private _handleFilterChange = (event: CustomEvent) => {
+    const { filterId, value } = event.detail;
+
+    const config = this.filterConfig.find(
+      (config) => config.filterId === filterId
+    );
+
+    if (!config) return;
+    this._filterState = [
+      ...this._filterState.map((fState) =>
+        fState.filterId === filterId ? { ...fState, value } : fState
+      ),
+    ];
+
+    /**
+     * should have values in cache to apply filter
+     */
+    if (this._searchResultCache.length === 0) return;
+
+    if (config.handler) {
+      this._searchResult = config.handler(this._searchResultCache, value);
+    }
+
+    this._showNoResults = this._searchResult.length === 0;
+  };
+
+  @property({ attribute: false })
+  filterConfig: FilterConfig[] = [];
+
   protected render() {
-    const isExpanded = this._items.length > 0;
+    const isExpanded = this._searchResult.length > 0;
     return html`
-      <div style="position: relative;">
-        <smart-filter-bar></smart-filter-bar>
-        <form
-          class="search-container"
-          @keydown=${this._handleKeyDown}
-          @submit=${this._handleSubmit}
-        >
-          <smart-input
-            theme=${this.theme}
-            .value=${this._inputValue}
-            @input-changed=${this._handleInputChange}
-            @focus-in=${this._handleFocusIn}
-            placeholder="Search..."
-            role="combobox"
-            .ariaControls=${this._listboxId}
-            .ariaExpanded=${isExpanded ? "true" : "false"}
-            .ariaActiveDescendant=${this._focusedItem?.id || null}
-          ></smart-input>
-          ${this._isLoading
-            ? this._spinnerElement
-            : this._inputValue.length > 0
-              ? this._clearButtonElement
-              : ""}
+      <div class="search-container">
+        <form @keydown=${this._handleKeyDown} @submit=${this._handleSubmit}>
+          <smart-filter
+            .config=${this.filterConfig}
+            @filter-applied=${this._handleFilterChange}
+          ></smart-filter>
+          <div class="input-wrapper">
+            <smart-input
+              theme=${this.theme}
+              .value=${this._inputValue}
+              @input-changed=${this._handleInputChange}
+              @focus-in=${this._handleFocusIn}
+              placeholder="Search..."
+              role="combobox"
+              .ariaControls=${this._listboxId}
+              .ariaExpanded=${isExpanded ? "true" : "false"}
+              .ariaActiveDescendant=${this._focusedItem?.id || null}
+            ></smart-input>
+            ${this._isLoading
+              ? this._spinnerElement
+              : this._inputValue.length > 0
+                ? this._clearButtonElement
+                : ""}
+          </div>
         </form>
-        ${this._items.length > 0
+        ${this._searchResult.length > 0
           ? html`<smart-dropdown
               id=${this._listboxId}
               .focusedItemId=${this._focusedItem?.id}
               @item-selected=${(event: CustomEvent) =>
                 this._handleItemSelected(event.detail.item)}
               @item-hovered=${this._handleItemHovered}
-              .items=${this._items}
+              .items=${this._searchResult}
             ></smart-dropdown>`
           : ""}
         ${this._showNoResults ? this._noResultElement : ""}
