@@ -61,9 +61,8 @@ private resultMapper = (data: Customer): SearchResultItem => ({
 ></smart-search>
 ```
 
-### TODO
+## TODO
 
-- smart-filter. add date component, re-use smart-dropdown in filter and add unit testing
-- exclude logic for copy and paste as well and default value
-- highlight text in li when match found - date picker component as a Filter option
-- dynamic drop down template via Slot
+- **Filter:** Date picker, reuse smart-dropdown, unit tests
+- **Input:** Paste validation, default value
+- **Dropdown:** Text highlighting, slot templates
