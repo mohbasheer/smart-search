@@ -64,7 +64,7 @@ export class SmartDropdown extends BaseComponent {
     return html`
       <ul
         role="listbox"
-        id=${this.id || "smart-dropdown-listbox"}
+        id=${`${this.id}-dropdown-listbox`}
         aria-label="Dropdown options"
         @pointerover=${this._handlePointerOver}
       >

@@ -86,7 +86,8 @@ export class SmartSearch extends BaseComponent {
 
   constructor() {
     super();
-    this._listboxId = `smart-dropdown-listbox-${nanoid(6)}`;
+    this.id = nanoid(6);
+    this._listboxId = `smart-dropdown-listbox-${this.id}`;
     this._floatingController = new FloatingUIController(this);
   }
 
@@ -323,6 +324,7 @@ export class SmartSearch extends BaseComponent {
           ></smart-filter>
           <div class="input-wrapper">
             <smart-input
+              id=${`smart-input-${this.id}`}
               theme=${this.theme}
               .exclude=${this.exclude}
               .value=${this._inputValue}

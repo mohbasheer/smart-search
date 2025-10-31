@@ -65,10 +65,10 @@ export class DemoPage extends LitElement {
       label: "priorityCustomer",
       componentType: "dropdown",
       options: [
-        { value: "All", label: "All Customers" },
-        { value: "cust-101", label: "Ricardo Montero" },
-        { value: "cust-106", label: "Ramsey Bolton" },
-        { value: "cust-108", label: "Enrico Pallazzo" },
+        { id: "All", value: "All", label: "All Customers" },
+        { id: "cust-101", value: "cust-101", label: "Ricardo Montero" },
+        { id: "cust-106", value: "cust-106", label: "Ramsey Bolton" },
+        { id: "cust-108", value: "cust-108", label: "Enrico Pallazzo" },
       ],
       handler: (
         items: SearchResultItem<Customer>[],

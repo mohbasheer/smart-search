@@ -1,6 +1,7 @@
 export type ComponentType = "checkbox" | "dropdown" | "date-picker";
 
-interface FilterOptions {
+export interface FilterOptions {
+  id: string;
   label: string;
   value: string;
 }

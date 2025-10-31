@@ -118,7 +118,7 @@ export class SmartInput extends BaseComponent {
   protected render() {
     return html`
       <input
-        id="smart-input"
+        id=${`${this.id}-input`}
         type="text"
         .value=${this.value}
         @keydown=${this._handleKeyDown}

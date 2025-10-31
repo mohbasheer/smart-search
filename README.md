@@ -20,7 +20,15 @@ A customizable Lit component for building a robust search input with features li
 
 ## 💡 Basic Usage
 
-The `smart-search` component requires a `searchProvider` (an asynchronous function to fetch results) and a `resultMapper` (a function to transform raw results into a format the dropdown understands). dark and light theme are available. user can add their own theme as well. provided example has ocean theme.
+### Required Props
+
+- **`searchProvider`** - Async function that fetches search results
+- **`resultMapper`** - Function that transforms API results into dropdown format
+
+### Features
+
+- **Theming** - Built-in `light` and `dark` themes. Custom themes supported (see ocean theme example)
+- **Filtering** - Apply filters before or during search.
 
 ```
  Raw data:

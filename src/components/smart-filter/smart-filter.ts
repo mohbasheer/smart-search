@@ -49,7 +49,12 @@ export class SmartFilter extends BaseComponent {
         >
           ${config.options?.map(
             (option) =>
-              html`<option value=${option.value}>${option.label}</option>`
+              html`<option
+                id="${baseId}-option-${option.id}"
+                value=${option.value}
+              >
+                ${option.label}
+              </option>`
           )}
         </select>`;
       case "date-picker":
