@@ -1,13 +1,17 @@
-import { html, LitElement, css } from "lit";
-import { customElement, state, query } from "lit/decorators.js";
+import { html, LitElement } from "lit";
+import { customElement, query, state } from "lit/decorators.js";
+import { FilterConfig } from "../components/smart-filter/type";
 import "../index";
+import { SearchResultItem } from "../index";
 import { queryCustomers } from "../mockAPI";
 import { Customer } from "../mockAPI/data/customers";
-import { SearchResultItem } from "../index";
-import { FilterConfig } from "../components/smart-filter/type";
+import { oceanTheme } from "./ocean-theme.styles.js";
+import { demoStyle } from "./demo.styles.js";
 
 @customElement("demo-page")
 export class DemoPage extends LitElement {
+  static styles = [oceanTheme, demoStyle];
+
   @state()
   private _selectedItem1: SearchResultItem<Customer> | null = null;
 
@@ -107,7 +111,7 @@ export class DemoPage extends LitElement {
           @search-item-selected=${this._handleItemSelected1}
           .filterConfig=${this._filterConfig}
           id="smart-search"
-          theme="light"
+          theme="ocean"
         ></smart-search>
         ${this._renderCustomerDetails(this._selectedItem1)}
       </div>
@@ -132,40 +136,38 @@ export class DemoPage extends LitElement {
       </div>
     `;
   }
+  //   dialog {
+  //     border: 1px solid #ccc;
+  //     border-radius: 8px;
+  //     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  //     padding: 2rem;
+  //     width: 80%;
+  //     max-width: 500px;
+  //   }
 
-  static styles = css`
-    dialog {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      padding: 2rem;
-      width: 80%;
-      max-width: 500px;
-    }
+  //   dialog::backdrop {
+  //     background-color: rgba(0, 0, 0, 0.5);
+  //   }
 
-    dialog::backdrop {
-      background-color: rgba(0, 0, 0, 0.5);
-    }
+  //   .close-button {
+  //     margin-top: 1rem;
+  //   }
 
-    .close-button {
-      margin-top: 1rem;
-    }
+  //   .details-container {
+  //     margin-top: 1.5rem;
+  //     padding: 1rem;
+  //     border: 1px solid #e0e0e0;
+  //     border-radius: 8px;
+  //     background-color: #f9f9f9;
+  //   }
 
-    .details-container {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-    }
+  //   .details-container h4 {
+  //     margin-top: 0;
+  //   }
 
-    .details-container h4 {
-      margin-top: 0;
-    }
-
-    .no-selection {
-      margin-top: 1.5rem;
-      color: #888;
-    }
-  `;
+  //   .no-selection {
+  //     margin-top: 1.5rem;
+  //     color: #888;
+  //   }
+  // `;
 }

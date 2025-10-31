@@ -317,6 +317,7 @@ export class SmartSearch extends BaseComponent {
       <div class="search-container">
         <form @keydown=${this._handleKeyDown} @submit=${this._handleSubmit}>
           <smart-filter
+            theme=${this.theme}
             .config=${this.filterConfig}
             @filter-applied=${this._handleFilterChange}
           ></smart-filter>
@@ -342,6 +343,7 @@ export class SmartSearch extends BaseComponent {
         </form>
         ${this._searchResult.length > 0
           ? html`<smart-dropdown
+              theme=${this.theme}
               id=${this._listboxId}
               .focusedItemId=${this._focusedItem?.id}
               @item-selected=${(event: CustomEvent) =>

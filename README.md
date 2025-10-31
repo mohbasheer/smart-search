@@ -20,7 +20,7 @@ A customizable Lit component for building a robust search input with features li
 
 ## 💡 Basic Usage
 
-The `smart-search` component requires a `searchProvider` (an asynchronous function to fetch results) and a `resultMapper` (a function to transform raw results into a format the dropdown understands).
+The `smart-search` component requires a `searchProvider` (an asynchronous function to fetch results) and a `resultMapper` (a function to transform raw results into a format the dropdown understands). dark and light theme are available. user can add their own theme as well. provided example has ocean theme.
 
 ```
  Raw data:
@@ -48,7 +48,7 @@ private resultMapper = (data: Customer): SearchResultItem => ({
   .searchProvider="${queryCustomers}"
   .resultMapper="${this.resultMapper}"
   id="my-search"
-  theme="light"
+  theme="ocean"
   exclude="@#$%^&*()!"
 ></smart-search>
 ```
